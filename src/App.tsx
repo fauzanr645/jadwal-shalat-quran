@@ -5,6 +5,7 @@ import { PrayerTab } from './components/prayer/PrayerTab';
 import { QuranTab } from './components/quran/QuranTab';
 import { DoaTab } from './components/doa/DoaTab';
 import { TasbihKiblatTab } from './components/doa/TasbihKiblatTab';
+import { SettingsTab } from './components/settings/SettingsTab';
 import { FloatingMurottalPlayer } from './components/quran/FloatingMurottalPlayer';
 import { usePrayerTimes } from './hooks/usePrayerTimes';
 
@@ -42,9 +43,6 @@ export const App: React.FC = () => {
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         cityName={settings.cityName}
-        notificationsEnabled={settings.notificationsEnabled}
-        onRequestNotification={requestNotificationPermission}
-        notificationPermission={notificationPermission}
       />
 
       {/* Main Content Area */}
@@ -55,18 +53,10 @@ export const App: React.FC = () => {
             settings={settings}
             selectedDate={selectedDate}
             onSelectDate={setSelectedDate}
-            onSelectCity={selectCity}
-            onRequestGPS={requestGPS}
-            onSetSoundPreference={setSoundPreference}
-            onSetVolume={setVolume}
-            onToggleNotifications={toggleNotifications}
-            onRequestNotificationPermission={requestNotificationPermission}
-            notificationPermission={notificationPermission}
             isAdzanPlaying={isAdzanPlaying}
             activeAdzanPrayer={activeAdzanPrayer}
             onStopAdzan={stopAdzan}
-            onTestAlert={testAlert}
-            onUpdateHijriAdjustment={handleUpdateHijriAdjustment}
+            onGoToSettings={() => setActiveTab('settings')}
           />
         )}
 
@@ -80,6 +70,21 @@ export const App: React.FC = () => {
             cityName={settings.cityName}
             latitude={settings.latitude}
             longitude={settings.longitude}
+          />
+        )}
+
+        {activeTab === 'settings' && (
+          <SettingsTab
+            settings={settings}
+            onSelectCity={selectCity}
+            onRequestGPS={requestGPS}
+            onSetSoundPreference={setSoundPreference}
+            onSetVolume={setVolume}
+            onToggleNotifications={toggleNotifications}
+            onRequestNotificationPermission={requestNotificationPermission}
+            notificationPermission={notificationPermission}
+            onTestAlert={testAlert}
+            onUpdateHijriAdjustment={handleUpdateHijriAdjustment}
           />
         )}
       </main>

@@ -1,8 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { 
   MapPin, 
-  Settings, 
-  Volume2, 
   Clock, 
   Compass, 
   ChevronLeft, 
@@ -12,29 +10,21 @@ import {
   Sunset,
   Moon,
   Sparkles,
-  Square
+  Square,
+  Sliders
 } from 'lucide-react';
 import type { CalculatedPrayerData } from '../../services/prayerService';
-import type { PrayerSettings, CityData, PrayerName, AdzanSoundPreference } from '../../types/prayer';
-import { LocationSettingsModal } from './LocationSettingsModal';
+import type { PrayerSettings, PrayerName } from '../../types/prayer';
 
 interface PrayerTabProps {
   data: CalculatedPrayerData;
   settings: PrayerSettings;
   selectedDate: Date;
   onSelectDate: (d: Date) => void;
-  onSelectCity: (city: CityData) => void;
-  onRequestGPS: () => Promise<{ success: boolean; message: string }>;
-  onSetSoundPreference: (prayer: PrayerName, pref: AdzanSoundPreference) => void;
-  onSetVolume: (volume: number) => void;
-  onToggleNotifications: (enabled: boolean) => void;
-  onRequestNotificationPermission: () => Promise<NotificationPermission>;
-  notificationPermission: NotificationPermission;
   isAdzanPlaying: boolean;
   activeAdzanPrayer: PrayerName | null;
   onStopAdzan: () => void;
-  onTestAlert: (prayer: PrayerName) => void;
-  onUpdateHijriAdjustment: (adj: number) => void;
+  onGoToSettings: () => void;
 }
 
 export const PrayerTab: React.FC<PrayerTabProps> = ({
@@ -42,21 +32,11 @@ export const PrayerTab: React.FC<PrayerTabProps> = ({
   settings,
   selectedDate,
   onSelectDate,
-  onSelectCity,
-  onRequestGPS,
-  onSetSoundPreference,
-  onSetVolume,
-  onToggleNotifications,
-  onRequestNotificationPermission,
-  notificationPermission,
   isAdzanPlaying,
   activeAdzanPrayer,
   onStopAdzan,
-  onTestAlert,
-  onUpdateHijriAdjustment,
+  onGoToSettings,
 }) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
   // Prayer icon mapping
   const getPrayerIcon = (id: PrayerName) => {
     switch (id) {
@@ -116,7 +96,7 @@ export const PrayerTab: React.FC<PrayerTabProps> = ({
   });
 
   return (
-    <div className="space-y-6 pb-24 md:pb-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+    <div className="space-y-6 pb-24 md:pb-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 animate-in fade-in duration-300">
       
       {/* Active Adzan Alert Banner */}
       {isAdzanPlaying && (
@@ -152,26 +132,31 @@ export const PrayerTab: React.FC<PrayerTabProps> = ({
       {/* Top Location & Date Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-3xl glass-panel border border-white/5">
         
-        {/* Location selector trigger */}
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-3 group text-left cursor-pointer hover:bg-white/5 p-2 rounded-2xl transition-all"
-        >
-          <div className="p-2.5 rounded-2xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 group-hover:bg-emerald-500/25 transition-all">
-            <MapPin className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-base font-extrabold text-white group-hover:text-emerald-300 transition-colors">
-                {settings.cityName}
-              </span>
-              <Settings className="w-3.5 h-3.5 text-slate-400 group-hover:rotate-45 transition-transform" />
+        {/* Location Display with Link to Settings */}
+        <div className="flex items-center justify-between sm:justify-start gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-2xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/25">
+              <MapPin className="w-5 h-5" />
             </div>
-            <span className="text-xs text-slate-400">
-              {settings.provinceName} • Standar Kemenag RI
-            </span>
+            <div>
+              <div className="text-base font-extrabold text-white">
+                {settings.cityName}
+              </div>
+              <span className="text-xs text-slate-400">
+                {settings.provinceName} • Kemenag RI
+              </span>
+            </div>
           </div>
-        </button>
+
+          <button
+            onClick={onGoToSettings}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-emerald-500/20 text-slate-300 hover:text-emerald-300 text-xs font-semibold border border-white/5 transition-all cursor-pointer"
+            title="Ubah Lokasi di Halaman Pengaturan"
+          >
+            <Sliders className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Ubah</span>
+          </button>
+        </div>
 
         {/* Date Selector Navigation */}
         <div className="flex items-center gap-2 self-start sm:self-auto bg-slate-900/80 p-1.5 rounded-2xl border border-white/5">
@@ -281,19 +266,8 @@ export const PrayerTab: React.FC<PrayerTabProps> = ({
               </div>
 
               <p className="text-xs text-slate-400 mt-2">
-                Menuju azan <strong className="text-emerald-400">{data.nextPrayer?.name}</strong>
+                Menuju waktu <strong className="text-emerald-400">{data.nextPrayer?.name}</strong>
               </p>
-
-              {/* Quick Test Audio Button */}
-              {data.nextPrayer && (
-                <button
-                  onClick={() => onTestAlert(data.nextPrayer!.id)}
-                  className="mt-4 w-full py-2 px-3 rounded-xl bg-white/5 hover:bg-emerald-500/20 text-slate-300 hover:text-emerald-300 text-xs font-semibold border border-white/5 transition-all cursor-pointer flex items-center justify-center gap-1.5"
-                >
-                  <Volume2 className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Dengarkan Adzan {data.nextPrayer?.name}</span>
-                </button>
-              )}
             </div>
           </div>
 
@@ -308,11 +282,11 @@ export const PrayerTab: React.FC<PrayerTabProps> = ({
             <p className="text-xs text-slate-400">Wilayah {settings.cityName} & Sekitarnya</p>
           </div>
           <button
-            onClick={() => setIsModalOpen(true)}
+            onClick={onGoToSettings}
             className="flex items-center gap-1 text-xs text-emerald-400 hover:text-emerald-300 font-semibold cursor-pointer"
           >
-            <Settings className="w-3.5 h-3.5" />
-            <span>Atur Suara</span>
+            <Sliders className="w-3.5 h-3.5" />
+            <span>Pengaturan Adzan & Notifikasi</span>
           </button>
         </div>
 
@@ -424,7 +398,7 @@ export const PrayerTab: React.FC<PrayerTabProps> = ({
               {data.qiblaDirection}° <span className="text-xs font-normal text-slate-400">Barat Laut</span>
             </div>
             <p className="text-xs text-slate-400 mt-1">
-              Dari koordinat {settings.cityName} menuju Ka'bah di Makkah.
+              Dari wilayah {settings.cityName} menuju Ka'bah di Makkah.
             </p>
           </div>
         </div>
@@ -446,22 +420,6 @@ export const PrayerTab: React.FC<PrayerTabProps> = ({
         </div>
 
       </div>
-
-      {/* Settings & Location Modal */}
-      <LocationSettingsModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        settings={settings}
-        onSelectCity={onSelectCity}
-        onRequestGPS={onRequestGPS}
-        onSetSoundPreference={onSetSoundPreference}
-        onSetVolume={onSetVolume}
-        onToggleNotifications={onToggleNotifications}
-        onRequestNotificationPermission={onRequestNotificationPermission}
-        notificationPermission={notificationPermission}
-        onTestAlert={onTestAlert}
-        onUpdateHijriAdjustment={onUpdateHijriAdjustment}
-      />
 
     </div>
   );

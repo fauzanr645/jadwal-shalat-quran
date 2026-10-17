@@ -5,30 +5,23 @@ import {
   Clock, 
   Sparkles, 
   Download, 
-  Bell, 
-  BellOff, 
   Wifi, 
-  WifiOff 
+  WifiOff,
+  Sliders
 } from 'lucide-react';
 
-export type AppTab = 'prayer' | 'quran' | 'doa' | 'tasbih';
+export type AppTab = 'prayer' | 'quran' | 'doa' | 'tasbih' | 'settings';
 
 interface NavbarProps {
   activeTab: AppTab;
   setActiveTab: (tab: AppTab) => void;
   cityName: string;
-  notificationsEnabled: boolean;
-  onRequestNotification: () => void;
-  notificationPermission: NotificationPermission;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   activeTab,
   setActiveTab,
   cityName,
-  notificationsEnabled,
-  onRequestNotification,
-  notificationPermission,
 }) => {
   const [currentTime, setCurrentTime] = useState<string>('');
   const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
@@ -59,7 +52,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
 
-    // PWA install prompt handler
+    // Install prompt handler
     const handleBeforeInstall = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e);
@@ -87,8 +80,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   const navItems = [
     { id: 'prayer' as AppTab, label: 'Jadwal Shalat', icon: Clock },
     { id: 'quran' as AppTab, label: 'Al-Qur’an & Murottal', icon: BookOpen },
-    { id: 'doa' as AppTab, label: 'Doa & Dzikir', icon: Sparkles },
+    { id: 'doa' as AppTab, label: 'Doa Harian', icon: Sparkles },
     { id: 'tasbih' as AppTab, label: 'Tasbih & Kiblat', icon: Compass },
+    { id: 'settings' as AppTab, label: 'Pengaturan', icon: Sliders },
   ];
 
   return (
@@ -111,7 +105,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   Shalat & Qur'an
                 </span>
                 <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                  PWA
+                  Kemenag RI
                 </span>
               </div>
               <p className="text-xs text-slate-400 flex items-center gap-1.5 font-medium">
@@ -164,25 +158,17 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span className="hidden sm:inline">{isOnline ? 'Online' : 'Offline'}</span>
             </div>
 
-            {/* Notification Permission Toggle */}
+            {/* Direct Settings Shortcut Button */}
             <button
-              onClick={onRequestNotification}
+              onClick={() => setActiveTab('settings')}
               className={`p-2 rounded-xl border text-sm transition-all duration-200 cursor-pointer ${
-                notificationPermission === 'granted' && notificationsEnabled
-                  ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/25'
+                activeTab === 'settings'
+                  ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
                   : 'bg-slate-800 text-slate-400 border-white/5 hover:text-slate-200 hover:bg-slate-700'
               }`}
-              title={
-                notificationPermission === 'granted'
-                  ? 'Notifikasi Adzan Aktif'
-                  : 'Aktifkan Izin Notifikasi Adzan'
-              }
+              title="Buka Pengaturan & Lokasi"
             >
-              {notificationPermission === 'granted' && notificationsEnabled ? (
-                <Bell className="w-4 h-4" />
-              ) : (
-                <BellOff className="w-4 h-4" />
-              )}
+              <Sliders className="w-4 h-4" />
             </button>
 
             {/* PWA Install Button */}
