@@ -126,15 +126,14 @@ export const PrayerTab: React.FC<PrayerTabProps> = ({
       )}
 
       {/* Top Date Navigation Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-3xl glass-panel border border-white/5">
-        <div className="flex items-center gap-2 text-xs text-slate-300">
-          <span className="font-semibold text-white">{formattedGregorian}</span>
-          <span className="text-slate-500">•</span>
-          <span className="text-emerald-400 font-medium">{data.hijriDate.formatted}</span>
+      <div className="flex items-center justify-between p-3 sm:p-4 rounded-3xl glass-panel border border-white/5">
+        <div className="flex items-center gap-2 text-xs text-slate-400 font-medium">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span>Pilih Hari Jadwal Shalat</span>
         </div>
 
         {/* Date Selector Navigation */}
-        <div className="flex items-center gap-1.5 self-start sm:self-auto bg-slate-900/80 p-1.5 rounded-2xl border border-white/5">
+        <div className="flex items-center gap-1.5 bg-slate-900/80 p-1.5 rounded-2xl border border-white/5">
           <button
             onClick={() => changeDateBy(-1)}
             className="p-1.5 sm:p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"

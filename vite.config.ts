@@ -10,7 +10,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'prompt',
-      includeAssets: ['favicon.svg', 'audio/*', 'icons/*'],
+      includeAssets: ['favicon.svg', 'apple-touch-icon.png', 'audio/*', 'icons/*'],
       manifest: {
         name: 'Jadwal Shalat & Al-Quran',
         short_name: 'Shalat & Quran',
@@ -20,6 +20,11 @@ export default defineConfig({
         display: 'standalone',
         orientation: 'portrait-primary',
         icons: [
+          {
+            src: 'apple-touch-icon.png',
+            sizes: '180x180',
+            type: 'image/png'
+          },
           {
             src: 'pwa-192x192.png',
             sizes: '192x192',

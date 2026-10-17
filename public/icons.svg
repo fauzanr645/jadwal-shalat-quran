@@ -1,10 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
   <defs>
-    <!-- Background Gradient -->
+    <!-- Background Gradient: Rich Deep Islamic Emerald to Midnight Navy -->
     <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#05131f"/>
-      <stop offset="45%" stop-color="#062826"/>
-      <stop offset="100%" stop-color="#024430"/>
+      <stop offset="0%" stop-color="#04121d"/>
+      <stop offset="50%" stop-color="#062b25"/>
+      <stop offset="100%" stop-color="#023b28"/>
     </linearGradient>
 
     <!-- Gold Metallic Gradient -->
@@ -15,7 +15,7 @@
       <stop offset="100%" stop-color="#b45309"/>
     </linearGradient>
 
-    <!-- Rich Gold Gradient for Cover/Stand -->
+    <!-- Rich Deep Gold for Edges & Cover -->
     <linearGradient id="deepGold" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#fbbf24"/>
       <stop offset="100%" stop-color="#92400e"/>
@@ -47,139 +47,130 @@
       <stop offset="100%" stop-color="#064e3b"/>
     </linearGradient>
 
-    <!-- Soft Glow Filter -->
-    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="8" result="blur"/>
-      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
-    </filter>
-
-    <radialGradient id="haloGlow" cx="50%" cy="40%" r="50%">
-      <stop offset="0%" stop-color="#34d399" stop-opacity="0.35"/>
-      <stop offset="60%" stop-color="#10b981" stop-opacity="0.1"/>
+    <!-- Radial Halo Glow Behind Quran -->
+    <radialGradient id="haloGlow" cx="50%" cy="45%" r="50%">
+      <stop offset="0%" stop-color="#34d399" stop-opacity="0.3"/>
+      <stop offset="60%" stop-color="#10b981" stop-opacity="0.08"/>
       <stop offset="100%" stop-color="#064e3b" stop-opacity="0"/>
     </radialGradient>
+
+    <!-- Soft Filter for Golden Glow -->
+    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
   </defs>
 
-  <!-- Background Base Squircle -->
-  <rect width="512" height="512" rx="128" fill="url(#bgGrad)"/>
-  
-  <!-- Subtle Outer Border -->
-  <rect x="6" y="6" width="500" height="500" rx="122" fill="none" stroke="url(#goldGrad)" stroke-width="3" opacity="0.45"/>
+  <!-- Full Bleed Square Background (Essential for iOS & Maskable Android PWA) -->
+  <rect width="512" height="512" fill="url(#bgGrad)"/>
 
-  <!-- Radial Halo Light Behind Quran -->
-  <circle cx="256" cy="220" r="190" fill="url(#haloGlow)"/>
+  <!-- Halo Light Effect Behind Book -->
+  <circle cx="256" cy="245" r="185" fill="url(#haloGlow)"/>
 
-  <!-- Background Islamic Geometric Ornamentation (Watermark) -->
-  <g opacity="0.08" stroke="#ffffff" stroke-width="2" fill="none">
+  <!-- Subtle Islamic Geometric Watermark Pattern -->
+  <g opacity="0.07" stroke="#ffffff" stroke-width="2" fill="none">
     <circle cx="256" cy="256" r="215"/>
     <polygon points="256,50 401,195 401,399 201,399 61,256 195,122"/>
     <polygon points="256,462 111,317 111,113 311,113 451,256 317,390"/>
     <circle cx="256" cy="256" r="140"/>
   </g>
 
-  <!-- TOP ILLUMINATION: Shining Rub el Hizb (Islamic 8-point Star) -->
-  <g transform="translate(256, 85)" filter="url(#glow)">
-    <!-- Light Rays -->
-    <circle cx="0" cy="0" r="28" fill="#fbbf24" opacity="0.15"/>
-    <!-- 8 Point Star -->
-    <rect x="-14" y="-14" width="28" height="28" fill="url(#goldGrad)" rx="2"/>
-    <rect x="-14" y="-14" width="28" height="28" fill="url(#goldGrad)" rx="2" transform="rotate(45)"/>
-    <circle cx="0" cy="0" r="5" fill="#ffffff"/>
-  </g>
+  <!-- CONTENT GROUP: Safely bounded inside the 80% safe zone (center: 256, 256) -->
+  <g transform="translate(0, 5)">
 
-  <!-- REHAL (Traditional Quran Wooden Stand) -->
-  <g id="rehal" opacity="0.95">
-    <!-- Left Leg crossing behind -->
-    <path d="M 170 330 L 100 425 C 95 432 102 440 112 440 L 155 440 C 162 440 168 436 172 430 L 256 315 L 230 295 Z" 
-          fill="url(#rehalGrad)" stroke="url(#deepGold)" stroke-width="2"/>
-    <!-- Right Leg crossing behind -->
-    <path d="M 342 330 L 412 425 C 417 432 410 440 400 440 L 357 440 C 350 440 344 436 340 430 L 256 315 L 282 295 Z" 
-          fill="url(#rehalGrad)" stroke="url(#deepGold)" stroke-width="2"/>
+    <!-- TOP ILLUMINATION: Shining Rub el Hizb (Islamic 8-point Star) -->
+    <g transform="translate(256, 92)" filter="url(#softGlow)">
+      <circle cx="0" cy="0" r="26" fill="#fbbf24" opacity="0.18"/>
+      <rect x="-13" y="-13" width="26" height="26" fill="url(#goldGrad)" rx="2"/>
+      <rect x="-13" y="-13" width="26" height="26" fill="url(#goldGrad)" rx="2" transform="rotate(45)"/>
+      <circle cx="0" cy="0" r="4.5" fill="#ffffff"/>
+    </g>
 
-    <!-- Rehal Front Center Crossing Joint & Carvings -->
-    <path d="M 195 385 Q 256 355 317 385 Q 256 415 195 385 Z" fill="url(#deepGold)" opacity="0.8"/>
-    <circle cx="256" cy="385" r="7" fill="#fbbf24"/>
+    <!-- REHAL (Traditional Quran Wooden Stand) -->
+    <g id="rehal" opacity="0.95">
+      <!-- Left Leg crossing behind -->
+      <path d="M 175 325 L 115 415 C 110 422 116 430 126 430 L 165 430 C 172 430 178 426 182 420 L 256 315 L 232 295 Z" 
+            fill="url(#rehalGrad)" stroke="url(#deepGold)" stroke-width="2"/>
+      <!-- Right Leg crossing behind -->
+      <path d="M 337 325 L 397 415 C 402 422 396 430 386 430 L 347 430 C 340 430 334 426 330 420 L 256 315 L 280 295 Z" 
+            fill="url(#rehalGrad)" stroke="url(#deepGold)" stroke-width="2"/>
 
-    <!-- Bottom Stand Decorative Feet Arch -->
-    <path d="M 130 435 Q 256 405 382 435" stroke="url(#goldGrad)" stroke-width="3" fill="none" opacity="0.7"/>
-  </g>
+      <!-- Rehal Center Crossing Joint & Carvings -->
+      <path d="M 200 375 Q 256 348 312 375 Q 256 402 200 375 Z" fill="url(#deepGold)" opacity="0.85"/>
+      <circle cx="256" cy="375" r="6" fill="#fbbf24"/>
 
-  <!-- AL-QUR'AN BOOK STRUCTURE -->
-  <g id="holy-quran" filter="url(#glow)">
+      <!-- Bottom Stand Arch -->
+      <path d="M 140 425 Q 256 398 372 425" stroke="url(#goldGrad)" stroke-width="2.5" fill="none" opacity="0.7"/>
+    </g>
 
-    <!-- BOOK COVER - OUTER LEATHER & GOLD EDGES -->
-    <!-- Left Cover -->
-    <path d="M 256 308 C 215 306 135 285 78 260 C 70 257 66 248 68 240 L 80 165 C 82 156 90 150 98 153 C 150 172 220 190 256 195 Z" 
-          fill="url(#emeraldCover)" stroke="url(#goldGrad)" stroke-width="3"/>
-    
-    <!-- Right Cover -->
-    <path d="M 256 308 C 297 306 377 285 434 260 C 442 257 446 248 444 240 L 432 165 C 430 156 422 150 414 153 C 362 172 292 190 256 195 Z" 
-          fill="url(#emeraldCover)" stroke="url(#goldGrad)" stroke-width="3"/>
+    <!-- THE HOLY AL-QUR'AN BOOK -->
+    <g id="holy-quran" filter="url(#softGlow)">
 
-    <!-- THICK PAGES STACK SHADOW (Page block depth) -->
-    <path d="M 78 260 L 86 268 C 142 292 220 310 256 312 C 292 310 370 292 426 268 L 434 260" 
-          fill="#cda851" stroke="url(#deepGold)" stroke-width="1.5"/>
+      <!-- BOOK COVER - OUTER LEATHER & GOLD EDGES -->
+      <!-- Left Cover -->
+      <path d="M 256 304 C 218 302 142 282 88 258 C 81 255 77 247 79 239 L 90 170 C 92 161 100 155 107 158 C 156 176 222 192 256 197 Z" 
+            fill="url(#emeraldCover)" stroke="url(#goldGrad)" stroke-width="3"/>
+      
+      <!-- Right Cover -->
+      <path d="M 256 304 C 294 302 370 282 424 258 C 431 255 435 247 433 239 L 422 170 C 420 161 412 155 405 158 C 356 176 290 192 256 197 Z" 
+            fill="url(#emeraldCover)" stroke="url(#goldGrad)" stroke-width="3"/>
 
-    <!-- OPEN PAGES (PARCHMENT / IVORY) -->
-    <!-- Left Page -->
-    <path d="M 256 192 C 218 187 148 168 94 150 C 88 148 83 153 84 159 L 94 252 C 95 257 100 260 106 262 C 155 278 222 295 256 298 Z" 
-          fill="url(#pageLeft)" stroke="#e2d396" stroke-width="1.5"/>
+      <!-- THICK PAGES STACK SHADOW (Page block depth) -->
+      <path d="M 88 258 L 96 265 C 148 288 222 305 256 307 C 290 305 364 288 416 265 L 424 258" 
+            fill="#cda851" stroke="url(#deepGold)" stroke-width="1.5"/>
 
-    <!-- Right Page -->
-    <path d="M 256 192 C 294 187 364 168 418 150 C 424 148 429 153 428 159 L 418 252 C 417 257 412 260 406 262 C 357 278 290 295 256 298 Z" 
-          fill="url(#pageRight)" stroke="#e2d396" stroke-width="1.5"/>
+      <!-- OPEN PAGES (PARCHMENT / IVORY) -->
+      <!-- Left Page -->
+      <path d="M 256 194 C 220 189 154 171 103 154 C 97 152 92 157 93 163 L 103 249 C 104 254 109 257 115 259 C 160 274 224 290 256 293 Z" 
+            fill="url(#pageLeft)" stroke="#e2d396" stroke-width="1.5"/>
 
-    <!-- BOOK SPINE CENTER CURVE -->
-    <path d="M 254 192 L 254 298 Q 256 300 258 298 L 258 192 Z" fill="#b45309"/>
+      <!-- Right Page -->
+      <path d="M 256 194 C 292 189 358 171 409 154 C 415 152 420 157 419 163 L 409 249 C 408 254 403 257 397 259 C 352 274 288 290 256 293 Z" 
+            fill="url(#pageRight)" stroke="#e2d396" stroke-width="1.5"/>
 
-    <!-- ORNATE CALLIGRAPHY & SURAH BORDERS ON PAGES -->
-    
-    <!-- Left Page Ornaments -->
-    <!-- Surah Header Frame -->
-    <path d="M 115 168 Q 175 184 238 196" stroke="url(#deepGold)" stroke-width="2.5" fill="none"/>
-    <rect x="150" y="174" width="45" height="7" rx="3" fill="url(#goldGrad)" opacity="0.8"/>
-    
-    <!-- Stylized Quran Ayah Script Lines (Left) -->
-    <path d="M 112 188 Q 170 203 238 214" stroke="#047857" stroke-width="2.5" stroke-linecap="round" opacity="0.75"/>
-    <path d="M 115 204 Q 172 218 238 228" stroke="#047857" stroke-width="2.5" stroke-linecap="round" opacity="0.75"/>
-    <path d="M 118 220 Q 174 233 238 242" stroke="#047857" stroke-width="2.5" stroke-linecap="round" opacity="0.75"/>
-    <path d="M 122 236 Q 176 248 238 256" stroke="#047857" stroke-width="2.5" stroke-linecap="round" opacity="0.75"/>
-    
-    <!-- Ayah Rosette / Medallion Marker (Left) -->
-    <circle cx="178" cy="225" r="4.5" fill="url(#goldGrad)"/>
-    <circle cx="178" cy="225" r="2" fill="#047857"/>
+      <!-- BOOK SPINE CENTER CURVE -->
+      <path d="M 254 194 L 254 293 Q 256 295 258 293 L 258 194 Z" fill="#b45309"/>
 
-    <!-- Right Page Ornaments -->
-    <!-- Surah Header Frame -->
-    <path d="M 397 168 Q 337 184 274 196" stroke="url(#deepGold)" stroke-width="2.5" fill="none"/>
-    <rect x="317" y="174" width="45" height="7" rx="3" fill="url(#goldGrad)" opacity="0.8"/>
+      <!-- ORNATE CALLIGRAPHY & SURAH BORDERS ON PAGES -->
+      
+      <!-- Left Page Ornaments -->
+      <path d="M 122 172 Q 178 187 238 198" stroke="url(#deepGold)" stroke-width="2.2" fill="none"/>
+      <rect x="155" y="177" width="42" height="6.5" rx="3" fill="url(#goldGrad)" opacity="0.85"/>
+      
+      <path d="M 120 190 Q 174 204 238 214" stroke="#047857" stroke-width="2.2" stroke-linecap="round" opacity="0.8"/>
+      <path d="M 123 205 Q 176 218 238 227" stroke="#047857" stroke-width="2.2" stroke-linecap="round" opacity="0.8"/>
+      <path d="M 126 220 Q 178 231 238 239" stroke="#047857" stroke-width="2.2" stroke-linecap="round" opacity="0.8"/>
+      <path d="M 130 234 Q 180 244 238 251" stroke="#047857" stroke-width="2.2" stroke-linecap="round" opacity="0.8"/>
+      
+      <circle cx="182" cy="223" r="4" fill="url(#goldGrad)"/>
+      <circle cx="182" cy="223" r="1.8" fill="#047857"/>
 
-    <!-- Stylized Quran Ayah Script Lines (Right) -->
-    <path d="M 400 188 Q 342 203 274 214" stroke="#047857" stroke-width="2.5" stroke-linecap="round" opacity="0.75"/>
-    <path d="M 397 204 Q 340 218 274 228" stroke="#047857" stroke-width="2.5" stroke-linecap="round" opacity="0.75"/>
-    <path d="M 394 220 Q 338 233 274 242" stroke="#047857" stroke-width="2.5" stroke-linecap="round" opacity="0.75"/>
-    <path d="M 390 236 Q 336 248 274 256" stroke="#047857" stroke-width="2.5" stroke-linecap="round" opacity="0.75"/>
+      <!-- Right Page Ornaments -->
+      <path d="M 390 172 Q 334 187 274 198" stroke="url(#deepGold)" stroke-width="2.2" fill="none"/>
+      <rect x="315" y="177" width="42" height="6.5" rx="3" fill="url(#goldGrad)" opacity="0.85"/>
 
-    <!-- Ayah Rosette / Medallion Marker (Right) -->
-    <circle cx="334" cy="225" r="4.5" fill="url(#goldGrad)"/>
-    <circle cx="334" cy="225" r="2" fill="#047857"/>
+      <path d="M 392 190 Q 338 204 274 214" stroke="#047857" stroke-width="2.2" stroke-linecap="round" opacity="0.8"/>
+      <path d="M 389 205 Q 336 218 274 227" stroke="#047857" stroke-width="2.2" stroke-linecap="round" opacity="0.8"/>
+      <path d="M 386 220 Q 334 231 274 239" stroke="#047857" stroke-width="2.2" stroke-linecap="round" opacity="0.8"/>
+      <path d="M 382 234 Q 332 244 274 251" stroke="#047857" stroke-width="2.2" stroke-linecap="round" opacity="0.8"/>
 
-    <!-- GOLDEN RIBBON BOOKMARK (Hanging down from center spine) -->
-    <path d="M 254 290 Q 251 340 242 375 L 248 379 L 254 372 L 260 379 L 266 375 Q 259 340 258 290 Z" 
-          fill="url(#goldGrad)" filter="url(#glow)"/>
-    <!-- Bookmark Tassel -->
-    <circle cx="254" cy="382" r="3" fill="#fbbf24"/>
-    <line x1="254" y1="384" x2="254" y2="395" stroke="#fbbf24" stroke-width="2"/>
+      <circle cx="330" cy="223" r="4" fill="url(#goldGrad)"/>
+      <circle cx="330" cy="223" r="1.8" fill="#047857"/>
 
-  </g>
+      <!-- GOLDEN RIBBON BOOKMARK (Hanging down from center spine) -->
+      <path d="M 254 286 Q 251 332 243 365 L 249 369 L 254 362 L 259 369 L 265 365 Q 259 332 258 286 Z" 
+            fill="url(#goldGrad)"/>
+      <circle cx="254" cy="371" r="2.8" fill="#fbbf24"/>
+      <line x1="254" y1="373" x2="254" y2="383" stroke="#fbbf24" stroke-width="1.8"/>
 
-  <!-- SPARKLES / NOOR OF THE QUR'AN -->
-  <g fill="#ffffff" opacity="0.9">
-    <!-- Star 1 (Left top) -->
-    <polygon points="120,110 123,118 131,121 123,124 120,132 117,124 109,121 117,118" fill="url(#goldGrad)"/>
-    <!-- Star 2 (Right top) -->
-    <polygon points="390,110 393,118 401,121 393,124 390,132 387,124 379,121 387,118" fill="url(#goldGrad)"/>
-    <!-- Star 3 (Center subtle) -->
-    <polygon points="256,132 258,137 263,139 258,141 256,146 254,141 249,139 254,137" fill="#ffffff"/>
+    </g>
+
+    <!-- SPARKLES / LIGHT RAYS -->
+    <g fill="url(#goldGrad)" opacity="0.85">
+      <polygon points="128,118 131,124 137,127 131,130 128,136 125,130 119,127 125,124"/>
+      <polygon points="384,118 387,124 393,127 387,130 384,136 381,130 375,127 381,124"/>
+      <circle cx="256" cy="140" r="3" fill="#ffffff" opacity="0.9"/>
+    </g>
+
   </g>
 </svg>
