@@ -154,6 +154,19 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span className="hidden sm:inline">{isOnline ? 'Online' : 'Offline'}</span>
             </div>
 
+            {/* Setting Button in Top Navbar */}
+            <button
+              onClick={() => setActiveTab('settings')}
+              className={`p-2 rounded-xl border text-sm transition-all duration-200 cursor-pointer ${
+                activeTab === 'settings'
+                  ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
+                  : 'bg-slate-800 text-slate-300 border-white/10 hover:text-white hover:bg-slate-700'
+              }`}
+              title="Pengaturan Aplikasi"
+            >
+              <Sliders className="w-4 h-4" />
+            </button>
+
             {/* PWA Install Button */}
             {isInstallable && (
               <button
