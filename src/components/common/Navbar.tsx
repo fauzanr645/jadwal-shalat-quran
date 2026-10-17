@@ -154,19 +154,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span className="hidden sm:inline">{isOnline ? 'Online' : 'Offline'}</span>
             </div>
 
-            {/* Direct Settings Shortcut Button */}
-            <button
-              onClick={() => setActiveTab('settings')}
-              className={`p-2 rounded-xl border text-sm transition-all duration-200 cursor-pointer ${
-                activeTab === 'settings'
-                  ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
-                  : 'bg-slate-800 text-slate-400 border-white/5 hover:text-slate-200 hover:bg-slate-700'
-              }`}
-              title="Buka Pengaturan & Lokasi"
-            >
-              <Sliders className="w-4 h-4" />
-            </button>
-
             {/* PWA Install Button */}
             {isInstallable && (
               <button

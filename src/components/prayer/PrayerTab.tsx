@@ -1,6 +1,5 @@
 import React from 'react';
 import { 
-  MapPin, 
   Clock, 
   Compass, 
   ChevronLeft, 
@@ -10,8 +9,7 @@ import {
   Sunset,
   Moon,
   Sparkles,
-  Square,
-  Sliders
+  Square
 } from 'lucide-react';
 import type { CalculatedPrayerData } from '../../services/prayerService';
 import type { PrayerSettings, PrayerName } from '../../types/prayer';
@@ -24,7 +22,6 @@ interface PrayerTabProps {
   isAdzanPlaying: boolean;
   activeAdzanPrayer: PrayerName | null;
   onStopAdzan: () => void;
-  onGoToSettings: () => void;
 }
 
 export const PrayerTab: React.FC<PrayerTabProps> = ({
@@ -35,7 +32,6 @@ export const PrayerTab: React.FC<PrayerTabProps> = ({
   isAdzanPlaying,
   activeAdzanPrayer,
   onStopAdzan,
-  onGoToSettings,
 }) => {
   // Prayer icon mapping
   const getPrayerIcon = (id: PrayerName) => {
@@ -129,40 +125,19 @@ export const PrayerTab: React.FC<PrayerTabProps> = ({
         </div>
       )}
 
-      {/* Top Location & Date Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-3xl glass-panel border border-white/5">
-        
-        {/* Location Display with Link to Settings */}
-        <div className="flex items-center justify-between sm:justify-start gap-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-2xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/25">
-              <MapPin className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="text-base font-extrabold text-white">
-                {settings.cityName}
-              </div>
-              <span className="text-xs text-slate-400">
-                {settings.provinceName} • Kemenag RI
-              </span>
-            </div>
-          </div>
-
-          <button
-            onClick={onGoToSettings}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-emerald-500/20 text-slate-300 hover:text-emerald-300 text-xs font-semibold border border-white/5 transition-all cursor-pointer"
-            title="Ubah Lokasi di Halaman Pengaturan"
-          >
-            <Sliders className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Ubah</span>
-          </button>
+      {/* Top Date Navigation Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-3xl glass-panel border border-white/5">
+        <div className="flex items-center gap-2 text-xs text-slate-300">
+          <span className="font-semibold text-white">{formattedGregorian}</span>
+          <span className="text-slate-500">•</span>
+          <span className="text-emerald-400 font-medium">{data.hijriDate.formatted}</span>
         </div>
 
         {/* Date Selector Navigation */}
-        <div className="flex items-center gap-2 self-start sm:self-auto bg-slate-900/80 p-1.5 rounded-2xl border border-white/5">
+        <div className="flex items-center gap-1.5 self-start sm:self-auto bg-slate-900/80 p-1.5 rounded-2xl border border-white/5">
           <button
             onClick={() => changeDateBy(-1)}
-            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            className="p-1.5 sm:p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
             title="Hari Sebelumnya"
           >
             <ChevronLeft className="w-4 h-4" />
@@ -170,14 +145,14 @@ export const PrayerTab: React.FC<PrayerTabProps> = ({
 
           <button
             onClick={() => onSelectDate(new Date())}
-            className="px-3 py-1.5 rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-bold hover:bg-emerald-500/30 transition-all cursor-pointer"
+            className="px-3.5 py-1.5 rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-bold hover:bg-emerald-500/30 transition-all cursor-pointer"
           >
             {getDayOffsetName()}
           </button>
 
           <button
             onClick={() => changeDateBy(1)}
-            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            className="p-1.5 sm:p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
             title="Hari Berikutnya"
           >
             <ChevronRight className="w-4 h-4" />
@@ -276,18 +251,9 @@ export const PrayerTab: React.FC<PrayerTabProps> = ({
 
       {/* Prayer Schedule Cards Grid (8 items) */}
       <div>
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h2 className="text-lg font-bold text-white tracking-tight">Jadwal Waktu Shalat Lengkap</h2>
-            <p className="text-xs text-slate-400">Wilayah {settings.cityName} & Sekitarnya</p>
-          </div>
-          <button
-            onClick={onGoToSettings}
-            className="flex items-center gap-1 text-xs text-emerald-400 hover:text-emerald-300 font-semibold cursor-pointer"
-          >
-            <Sliders className="w-3.5 h-3.5" />
-            <span>Pengaturan Adzan & Notifikasi</span>
-          </button>
+        <div className="mb-4">
+          <h2 className="text-lg font-bold text-white tracking-tight">Jadwal Waktu Shalat Lengkap</h2>
+          <p className="text-xs text-slate-400">Standar Kemenag RI • Wilayah {settings.cityName} & Sekitarnya</p>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">

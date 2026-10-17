@@ -57,7 +57,6 @@ export const App: React.FC = () => {
             isAdzanPlaying={isAdzanPlaying}
             activeAdzanPrayer={activeAdzanPrayer}
             onStopAdzan={stopAdzan}
-            onGoToSettings={() => setActiveTab('settings')}
           />
         )}
 
