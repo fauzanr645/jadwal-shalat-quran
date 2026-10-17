@@ -7,6 +7,7 @@ import { DoaTab } from './components/doa/DoaTab';
 import { TasbihKiblatTab } from './components/doa/TasbihKiblatTab';
 import { SettingsTab } from './components/settings/SettingsTab';
 import { FloatingMurottalPlayer } from './components/quran/FloatingMurottalPlayer';
+import { PwaUpdatePrompt } from './components/common/PwaUpdatePrompt';
 import { usePrayerTimes } from './hooks/usePrayerTimes';
 
 export const App: React.FC = () => {
@@ -106,6 +107,9 @@ export const App: React.FC = () => {
           </p>
         </div>
       </footer>
+
+      {/* PWA Update Notification Prompt & Offline Ready Toast */}
+      <PwaUpdatePrompt />
 
     </div>
   );

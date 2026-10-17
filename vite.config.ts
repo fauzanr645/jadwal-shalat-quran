@@ -9,14 +9,14 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       includeAssets: ['favicon.svg', 'audio/*', 'icons/*'],
       manifest: {
         name: 'Jadwal Shalat & Al-Quran',
         short_name: 'Shalat & Quran',
         description: 'Jadwal Shalat Akurat Kemenag RI, Notifikasi Adzan, Al-Qur\'an Digital & Murottal',
-        theme_color: '#090e17',
-        background_color: '#090e17',
+        theme_color: '#090d16',
+        background_color: '#090d16',
         display: 'standalone',
         orientation: 'portrait-primary',
         icons: [
@@ -35,6 +35,12 @@ export default defineConfig({
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any maskable'
+          },
+          {
+            src: 'favicon.svg',
+            sizes: 'any',
+            type: 'image/svg+xml',
+            purpose: 'any'
           }
         ]
       },

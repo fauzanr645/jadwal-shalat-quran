@@ -92,12 +92,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           
           {/* Logo & Brand */}
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => setActiveTab('prayer')}>
-            <div className="relative flex items-center justify-center w-11 h-11 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-700 shadow-lg shadow-emerald-500/25 border border-emerald-400/30">
-              {/* Crescent & Star Icon */}
-              <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z" fill="currentColor" fillOpacity="0.85"/>
-                <polygon points="19 3 19.5 4.5 21 5 19.5 5.5 19 7 18.5 5.5 17 5 18.5 4.5 19 3" fill="#fbbf24" stroke="#fbbf24"/>
-              </svg>
+            <div className="relative flex items-center justify-center w-11 h-11 rounded-2xl bg-gradient-to-br from-emerald-950 via-slate-900 to-emerald-900 shadow-lg shadow-emerald-500/20 border border-emerald-400/30 p-1.5 overflow-hidden group">
+              <img src="/favicon.svg" alt="Al-Qur'an" className="w-full h-full object-contain filter drop-shadow group-hover:scale-105 transition-transform" />
             </div>
             <div>
               <div className="flex items-center gap-2">

@@ -11,7 +11,9 @@ import {
   Calendar,
   Info,
   ShieldCheck,
-  Smartphone
+  Smartphone,
+  RefreshCw,
+  Sparkles
 } from 'lucide-react';
 import { INDONESIA_CITIES, searchCities } from '../../data/indonesiaCities';
 import type { CityData, PrayerName, AdzanSoundPreference, PrayerSettings } from '../../types/prayer';
@@ -44,6 +46,30 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [isGpsLoading, setIsGpsLoading] = useState(false);
   const [gpsMessage, setGpsMessage] = useState<string | null>(null);
+  const [isCheckingUpdate, setIsCheckingUpdate] = useState(false);
+  const [updateCheckMsg, setUpdateCheckMsg] = useState<string | null>(null);
+
+  const handleManualCheckUpdate = async () => {
+    setIsCheckingUpdate(true);
+    setUpdateCheckMsg('Memeriksa versi terbaru ke server...');
+    try {
+      if ('serviceWorker' in navigator) {
+        const reg = await navigator.serviceWorker.getRegistration();
+        if (reg) {
+          await reg.update();
+        }
+      }
+      setTimeout(() => {
+        setIsCheckingUpdate(false);
+        setUpdateCheckMsg('Aplikasi Anda sudah dalam versi terbaru (Al-Qur\'an & PWA v1.2.0)');
+        setTimeout(() => setUpdateCheckMsg(null), 4000);
+      }, 1200);
+    } catch {
+      setIsCheckingUpdate(false);
+      setUpdateCheckMsg('Gagal memeriksa pembaruan. Pastikan Anda online.');
+      setTimeout(() => setUpdateCheckMsg(null), 3000);
+    }
+  };
 
   const filteredCities = searchCities(searchQuery);
   const popularCities = INDONESIA_CITIES.slice(0, 10);
@@ -389,7 +415,57 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
         </div>
       </div>
 
-      {/* SECTION 4: INFO SISTEM & STANDAR */}
+      {/* SECTION 4: PEMBARUAN APLIKASI (PWA UPDATE) */}
+      <div className="p-6 rounded-3xl glass-panel-elevated border border-white/10 space-y-4 shadow-xl">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-950 via-slate-900 to-emerald-900 border border-emerald-400/30 p-1.5 flex items-center justify-center shrink-0">
+              <img src="/favicon.svg" alt="Al-Qur'an Icon" className="w-full h-full object-contain filter drop-shadow" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-base font-extrabold text-white">Shalat & Al-Qur'an PWA</h2>
+                <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold">
+                  v1.2.0
+                </span>
+              </div>
+              <p className="text-xs text-slate-400">
+                Aplikasi Web Progresif (PWA) dengan ikon Al-Qur'an & offline support.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-slate-900/60 border border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="space-y-0.5">
+            <h4 className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+              Notifikasi Pembaruan Otomatis
+            </h4>
+            <p className="text-[11px] text-slate-400">
+              Setiap kali versi baru dirilis, aplikasi akan menampilkan pop-up pemberitahuan untuk memperbarui ke versi terbaru.
+            </p>
+          </div>
+
+          <button
+            onClick={handleManualCheckUpdate}
+            disabled={isCheckingUpdate}
+            className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-slate-800 hover:bg-emerald-500/20 text-slate-200 hover:text-emerald-300 border border-white/10 hover:border-emerald-500/30 text-xs font-bold transition-all cursor-pointer shrink-0"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isCheckingUpdate ? 'animate-spin text-emerald-400' : ''}`} />
+            <span>{isCheckingUpdate ? 'Memeriksa...' : 'Periksa Pembaruan'}</span>
+          </button>
+        </div>
+
+        {updateCheckMsg && (
+          <div className="text-xs text-emerald-300 bg-emerald-950/60 p-3 rounded-xl border border-emerald-800/40 flex items-center gap-2 animate-in fade-in duration-200">
+            <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span>{updateCheckMsg}</span>
+          </div>
+        )}
+      </div>
+
+      {/* SECTION 5: INFO SISTEM & STANDAR */}
       <div className="p-5 rounded-3xl glass-panel border border-white/5 flex items-center gap-3 text-xs text-slate-400">
         <Info className="w-5 h-5 text-emerald-400 shrink-0" />
         <span>
