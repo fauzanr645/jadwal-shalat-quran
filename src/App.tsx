@@ -24,6 +24,9 @@ export const App: React.FC = () => {
     setSoundPreference,
     setVolume,
     toggleNotifications,
+    toggleBackgroundKeepAlive,
+    toggleWakeLock,
+    isKeepAliveActive,
     notificationPermission,
     requestNotificationPermission,
     isAdzanPlaying,
@@ -58,6 +61,9 @@ export const App: React.FC = () => {
             isAdzanPlaying={isAdzanPlaying}
             activeAdzanPrayer={activeAdzanPrayer}
             onStopAdzan={stopAdzan}
+            onToggleBackgroundKeepAlive={toggleBackgroundKeepAlive}
+            isKeepAliveActive={isKeepAliveActive}
+            onOpenSettings={() => setActiveTab('settings')}
           />
         )}
 
@@ -82,6 +88,9 @@ export const App: React.FC = () => {
             onSetSoundPreference={setSoundPreference}
             onSetVolume={setVolume}
             onToggleNotifications={toggleNotifications}
+            onToggleBackgroundKeepAlive={toggleBackgroundKeepAlive}
+            isKeepAliveActive={isKeepAliveActive}
+            onToggleWakeLock={toggleWakeLock}
             onRequestNotificationPermission={requestNotificationPermission}
             notificationPermission={notificationPermission}
             onTestAlert={testAlert}

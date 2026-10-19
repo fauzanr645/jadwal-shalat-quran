@@ -5,14 +5,14 @@ class NotificationService {
   private lastNotifiedKey: string = '';
 
   public getPermission(): NotificationPermission {
-    if (!('Notification' in window)) {
+    if (typeof window === 'undefined' || !('Notification' in window)) {
       return 'denied';
     }
     return Notification.permission;
   }
 
   public async requestPermission(): Promise<NotificationPermission> {
-    if (!('Notification' in window)) {
+    if (typeof window === 'undefined' || !('Notification' in window)) {
       return 'denied';
     }
     try {
@@ -23,27 +23,35 @@ class NotificationService {
     }
   }
 
-  public showNotification(title: string, body: string, icon: string = '/favicon.svg') {
+  public showNotification(title: string, body: string, icon: string = '/apple-touch-icon.png') {
     if (this.getPermission() !== 'granted') return;
 
     try {
+      const options: any = {
+        body,
+        icon,
+        badge: icon,
+        tag: 'prayer-notification',
+        renotify: true,
+        requireInteraction: true,
+        vibrate: [500, 250, 500, 250, 500, 250, 500],
+        silent: false,
+        actions: [
+          { action: 'open', title: 'Buka Jadwal' },
+          { action: 'stop', title: 'Hentikan Suara' },
+        ],
+      };
+
       if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-        navigator.serviceWorker.ready.then((reg) => {
-          reg.showNotification(title, {
-            body,
-            icon,
-            badge: icon,
-            tag: 'prayer-notification',
-            requireInteraction: true,
-          } as any);
-        });
+        navigator.serviceWorker.ready
+          .then((reg) => {
+            reg.showNotification(title, options);
+          })
+          .catch(() => {
+            new Notification(title, options);
+          });
       } else {
-        new Notification(title, {
-          body,
-          icon,
-          badge: icon,
-          tag: 'prayer-notification',
-        } as any);
+        new Notification(title, options);
       }
     } catch (err) {
       console.warn('Failed to show notification:', err);
@@ -61,14 +69,14 @@ class NotificationService {
     canPlayAdzan: boolean
   ) {
     const title = `Waktu Shalat ${prayerLabel} Telah Tiba!`;
-    const body = `Untuk wilayah ${cityName} dan sekitarnya. Mari tunaikan shalat tepat waktu.`;
+    const body = `Wilayah ${cityName} dan sekitarnya. Mari tunaikan shalat tepat waktu.`;
 
-    // 1. Browser Notification
+    // 1. Browser / Mobile Notification with Vibration
     if (preference !== 'muted') {
       this.showNotification(title, body);
     }
 
-    // 2. Audio Playback
+    // 2. Audio Playback (Adzan / Chime)
     if (preference === 'adzan_full' && canPlayAdzan) {
       audioService.playAdzan(prayerName);
     } else if (preference === 'chime_only' || (preference === 'adzan_full' && !canPlayAdzan)) {
@@ -77,7 +85,8 @@ class NotificationService {
   }
 
   /**
-   * Called by the prayer timer tick loop every second
+   * Called by the prayer timer tick loop every second and on visibility change.
+   * Window increased to 3 minutes (180,000 ms) so aggressive mobile OS timer throttling does not miss the prayer.
    */
   public checkAndNotify(
     prayers: { id: PrayerName; name: string; date: Date; canPlayAdzan: boolean }[],
@@ -95,8 +104,8 @@ class NotificationService {
       const pTime = p.date.getTime();
       const diffMs = nowTime - pTime;
 
-      // Within 45 seconds of the prayer time
-      if (diffMs >= 0 && diffMs < 45000) {
+      // Within 3 minutes of the prayer time (handles background timer delays on iOS/Android)
+      if (diffMs >= 0 && diffMs < 180000) {
         const key = `${p.id}-${dateStr}`;
         if (this.lastNotifiedKey !== key) {
           this.lastNotifiedKey = key;

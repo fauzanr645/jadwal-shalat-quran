@@ -3,7 +3,6 @@ import {
   MapPin, 
   Navigation, 
   Volume2, 
-  Bell, 
   Search, 
   Check, 
   VolumeX, 
@@ -13,7 +12,10 @@ import {
   ShieldCheck,
   Smartphone,
   RefreshCw,
-  Sparkles
+  Sparkles,
+  Radio,
+  Eye,
+  HelpCircle
 } from 'lucide-react';
 import { INDONESIA_CITIES, searchCities } from '../../data/indonesiaCities';
 import type { CityData, PrayerName, AdzanSoundPreference, PrayerSettings } from '../../types/prayer';
@@ -25,6 +27,9 @@ interface SettingsTabProps {
   onSetSoundPreference: (prayer: PrayerName, pref: AdzanSoundPreference) => void;
   onSetVolume: (volume: number) => void;
   onToggleNotifications: (enabled: boolean) => void;
+  onToggleBackgroundKeepAlive: (enabled: boolean) => Promise<boolean>;
+  isKeepAliveActive: boolean;
+  onToggleWakeLock: (enabled: boolean) => Promise<boolean>;
   onRequestNotificationPermission: () => Promise<NotificationPermission>;
   notificationPermission: NotificationPermission;
   onTestAlert: (prayer: PrayerName) => void;
@@ -38,6 +43,9 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
   onSetSoundPreference,
   onSetVolume,
   onToggleNotifications,
+  onToggleBackgroundKeepAlive,
+  isKeepAliveActive,
+  onToggleWakeLock,
   onRequestNotificationPermission,
   notificationPermission,
   onTestAlert,
@@ -48,6 +56,8 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
   const [gpsMessage, setGpsMessage] = useState<string | null>(null);
   const [isCheckingUpdate, setIsCheckingUpdate] = useState(false);
   const [updateCheckMsg, setUpdateCheckMsg] = useState<string | null>(null);
+  const [keepAliveLoading, setKeepAliveLoading] = useState(false);
+  const [activeGuideTab, setActiveGuideTab] = useState<'iphone' | 'android'>('iphone');
 
   const handleManualCheckUpdate = async () => {
     setIsCheckingUpdate(true);
@@ -69,6 +79,12 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
       setUpdateCheckMsg('Gagal memeriksa pembaruan. Pastikan Anda online.');
       setTimeout(() => setUpdateCheckMsg(null), 3000);
     }
+  };
+
+  const handleToggleKeepAlive = async () => {
+    setKeepAliveLoading(true);
+    await onToggleBackgroundKeepAlive(!settings.backgroundKeepAlive);
+    setKeepAliveLoading(false);
   };
 
   const filteredCities = searchCities(searchQuery);
@@ -104,7 +120,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
             Pengaturan Aplikasi
           </h1>
           <p className="text-xs sm:text-sm text-slate-400 mt-1">
-            Konfigurasi lokasi wilayah, bunyi adzan, notifikasi waktu shalat, dan kalender.
+            Konfigurasi lokasi wilayah, bunyi adzan latar belakang, notifikasi, dan kalender.
           </p>
         </div>
         <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-400 font-bold">
@@ -229,29 +245,122 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
         </div>
       </div>
 
-      {/* SECTION 2: NOTIFIKASI & SUARA ADZAN */}
-      <div className="p-6 rounded-3xl glass-panel-elevated border border-white/10 space-y-6 shadow-xl">
-        <div className="flex items-center gap-2.5">
-          <div className="p-2.5 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
-            <Bell className="w-5 h-5" />
-          </div>
-          <div>
-            <h2 className="text-base font-extrabold text-white">Notifikasi & Bunyi Adzan</h2>
-            <p className="text-xs text-slate-400">Atur izin notifikasi popup browser dan suara panggilan shalat</p>
+      {/* SECTION 2: ADZAN & NOTIFIKASI LATAR BELAKANG (SOLUSI IPHONE & ANDROID) */}
+      <div className="p-6 rounded-3xl glass-panel-elevated border border-emerald-500/30 space-y-6 shadow-2xl relative overflow-hidden">
+        
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2.5 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/25">
+              <Radio className="w-5 h-5 animate-pulse" />
+            </div>
+            <div>
+              <h2 className="text-base font-extrabold text-white flex items-center gap-2">
+                <span>Adzan Latar Belakang (Keep-Alive Audio)</span>
+                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                  Solusi Layar Mati
+                </span>
+              </h2>
+              <p className="text-xs text-slate-300 mt-0.5">
+                Mencegah sistem HP (iOS & Android) menidurkan timer saat layar terkunci atau di-minimize
+              </p>
+            </div>
           </div>
         </div>
 
-        {/* Notification Permission Card */}
+        {/* Highlight Card: Keep-Alive Audio Mode Toggle */}
+        <div className="p-5 rounded-2xl bg-gradient-to-br from-emerald-950/80 via-slate-900/90 to-teal-950/60 border border-emerald-500/40 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                <span>Aktifkan Sesi Audio Latar Belakang</span>
+                {isKeepAliveActive ? (
+                  <span className="flex items-center gap-1 text-[11px] font-bold text-emerald-400 bg-emerald-500/20 px-2 py-0.5 rounded-full border border-emerald-500/30">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                    Aktif Berjalan
+                  </span>
+                ) : (
+                  <span className="text-[11px] font-medium text-slate-400 bg-slate-800 px-2 py-0.5 rounded-full border border-white/5">
+                    Nonaktif
+                  </span>
+                )}
+              </h3>
+              <p className="text-xs text-slate-300 leading-relaxed max-w-xl">
+                Sistem operasi HP (terutama <strong>iOS di iPhone</strong> dan <strong>Android Doze</strong>) secara default menghentikan script JavaScript ketika layar HP mati. Mode ini memutar audio latar belakang tanpa suara agar jam hitung mundur tetap berjalan dan <strong>suara adzan dapat berkumandang otomatis saat layar HP terkunci</strong>.
+              </p>
+            </div>
+
+            <button
+              onClick={handleToggleKeepAlive}
+              disabled={keepAliveLoading}
+              className={`flex items-center justify-center gap-2 px-6 py-3 rounded-2xl text-xs font-extrabold transition-all cursor-pointer shrink-0 shadow-lg ${
+                settings.backgroundKeepAlive
+                  ? 'bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40'
+                  : 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white shadow-emerald-500/25'
+              }`}
+            >
+              {keepAliveLoading ? (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  <span>Memproses...</span>
+                </>
+              ) : settings.backgroundKeepAlive ? (
+                <>
+                  <VolumeX className="w-4 h-4" />
+                  <span>Matikan Mode Latar Belakang</span>
+                </>
+              ) : (
+                <>
+                  <Radio className="w-4 h-4" />
+                  <span>Aktifkan Adzan di Latar Belakang</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          {settings.backgroundKeepAlive && (
+            <div className="text-[11px] text-emerald-200 bg-emerald-950/90 p-3 rounded-xl border border-emerald-500/40 flex items-start gap-2">
+              <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+              <span>
+                <strong>Sesi Latar Belakang Aktif!</strong> Anda dapat mengunci layar HP atau keluar dari aplikasi. Begitu waktu shalat tiba, adzan dan notifikasi getar akan berkumandang dari speaker HP.
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Screen Wake Lock Option */}
+        <div className="p-4 rounded-2xl bg-slate-900/60 border border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="space-y-0.5">
+            <h4 className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+              <Eye className="w-3.5 h-3.5 text-teal-400" />
+              Mode Layar Terus Menyala (Screen Wake Lock)
+            </h4>
+            <p className="text-[11px] text-slate-400">
+              Cegah layar HP meredup atau terkunci otomatis (cocok untuk meletakkan HP di atas meja atau stand sebagai jam shalat).
+            </p>
+          </div>
+
+          <label className="flex items-center gap-2 text-xs font-bold text-slate-300 cursor-pointer bg-slate-800/80 px-3.5 py-2 rounded-xl border border-white/10 hover:border-emerald-500/30 transition-all shrink-0">
+            <input
+              type="checkbox"
+              checked={settings.wakeLockEnabled}
+              onChange={(e) => onToggleWakeLock(e.target.checked)}
+              className="accent-emerald-500 rounded cursor-pointer w-4 h-4"
+            />
+            <span>Layar Tetap Aktif</span>
+          </label>
+        </div>
+
+        {/* Browser Notification Permission Card */}
         <div className="p-4 rounded-2xl bg-slate-900/70 border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
             <h3 className="text-sm font-bold text-white flex items-center gap-2">
               <Smartphone className="w-4 h-4 text-emerald-400" />
-              Status Notifikasi Browser
+              Izin Notifikasi Popup & Getaran
             </h3>
             <p className="text-xs text-slate-400">
               {notificationPermission === 'granted'
-                ? 'Izin notifikasi aktif. Anda akan menerima pemberitahuan otomatis saat waktu shalat tiba.'
-                : 'Izin notifikasi belum aktif. Aktifkan agar browser memunculkan peringatan shalat.'}
+                ? 'Izin notifikasi telah aktif. Banner pemberitahuan dan getaran akan muncul di layar saat adzan.'
+                : 'Izin notifikasi belum aktif. Aktifkan agar browser dan HP memunculkan banner waktu shalat.'}
             </p>
           </div>
 
@@ -271,7 +380,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                   onChange={(e) => onToggleNotifications(e.target.checked)}
                   className="accent-emerald-500 rounded cursor-pointer w-4 h-4"
                 />
-                <span>Peringatan Shalat Aktif</span>
+                <span>Peringatan Notif Aktif</span>
               </label>
             )}
           </div>
@@ -381,7 +490,130 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
         </div>
       </div>
 
-      {/* SECTION 3: KALENDER HIJRIYAH */}
+      {/* SECTION 3: PANDUAN PENTING PENGATURAN HP (IPHONE & ANDROID) */}
+      <div className="p-6 rounded-3xl glass-panel-elevated border border-amber-500/25 space-y-5 shadow-xl">
+        <div className="flex items-center gap-2.5">
+          <div className="p-2.5 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
+            <HelpCircle className="w-5 h-5" />
+          </div>
+          <div>
+            <h2 className="text-base font-extrabold text-white flex items-center gap-2">
+              <span>Panduan Notifikasi Layar Mati (iPhone & Android)</span>
+            </h2>
+            <p className="text-xs text-slate-400">
+              Ikuti langkah di bawah ini agar adzan tidak terblokir oleh pembatasan baterai HP Anda
+            </p>
+          </div>
+        </div>
+
+        {/* Tab Switcher: iPhone vs Android */}
+        <div className="flex bg-slate-900 p-1.5 rounded-2xl border border-white/5 max-w-sm">
+          <button
+            onClick={() => setActiveGuideTab('iphone')}
+            className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeGuideTab === 'iphone'
+                ? 'bg-emerald-500 text-white shadow-md'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            🍎 Panduan iPhone (iOS)
+          </button>
+          <button
+            onClick={() => setActiveGuideTab('android')}
+            className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeGuideTab === 'android'
+                ? 'bg-emerald-500 text-white shadow-md'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            🤖 Panduan Android
+          </button>
+        </div>
+
+        {/* iPhone (iOS) Guide */}
+        {activeGuideTab === 'iphone' && (
+          <div className="space-y-3 animate-in fade-in duration-200">
+            <div className="p-4 rounded-2xl bg-slate-900/60 border border-white/5 space-y-2">
+              <div className="flex items-start gap-2.5">
+                <span className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">1</span>
+                <div>
+                  <h4 className="text-xs font-bold text-white">Wajib: "Tambahkan ke Layar Utama" (Add to Home Screen)</h4>
+                  <p className="text-xs text-slate-300 mt-0.5 leading-relaxed">
+                    Sistem iOS (Apple) <strong>hanya mengizinkan Web Notification</strong> pada aplikasi PWA yang telah ditambahkan ke Layar Utama. Buka di <strong>Safari</strong> &gt; Tekan tombol <strong>Share</strong> (kotak panah ke atas) &gt; Pilih <strong>"Tambahkan ke Layar Utama"</strong>.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-slate-900/60 border border-white/5 space-y-2">
+              <div className="flex items-start gap-2.5">
+                <span className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">2</span>
+                <div>
+                  <h4 className="text-xs font-bold text-white">Matikan Mode Hening (Saklar Fisik Silent / Action Button)</h4>
+                  <p className="text-xs text-slate-300 mt-0.5 leading-relaxed">
+                    Pastikan saklar fisik di samping kiri iPhone tidak dalam posisi hening (tidak ada garis oranye). iOS secara mutlak membungkam semua suara audio web jika saklar fisik dalam keadaan Silent/Mute.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-slate-900/60 border border-white/5 space-y-2">
+              <div className="flex items-start gap-2.5">
+                <span className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">3</span>
+                <div>
+                  <h4 className="text-xs font-bold text-white">Aktifkan Tombol "Adzan Latar Belakang" di Atas</h4>
+                  <p className="text-xs text-slate-300 mt-0.5 leading-relaxed">
+                    Setelah ditambahkan ke homescreen, buka aplikasi dari ikon layar utama dan klik tombol hijau <strong>"Aktifkan Adzan di Latar Belakang"</strong> di atas sebelum mengunci layar iPhone.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Android Guide */}
+        {activeGuideTab === 'android' && (
+          <div className="space-y-3 animate-in fade-in duration-200">
+            <div className="p-4 rounded-2xl bg-slate-900/60 border border-white/5 space-y-2">
+              <div className="flex items-start gap-2.5">
+                <span className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">1</span>
+                <div>
+                  <h4 className="text-xs font-bold text-white">Baterai: Pilih "Tidak Dibatasi" (Unrestricted)</h4>
+                  <p className="text-xs text-slate-300 mt-0.5 leading-relaxed">
+                    Masuk ke <em>Pengaturan HP &gt; Aplikasi &gt; Shalat & Quran (atau Chrome) &gt; Baterai</em>, lalu pilih <strong>"Tidak Dibatasi" (Unrestricted)</strong> agar fitur Doze Mode Android tidak mematikan timer saat layar terkunci.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-slate-900/60 border border-white/5 space-y-2">
+              <div className="flex items-start gap-2.5">
+                <span className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">2</span>
+                <div>
+                  <h4 className="text-xs font-bold text-white">Izinkan Suara, Getaran & Tampil di Layar Kunci</h4>
+                  <p className="text-xs text-slate-300 mt-0.5 leading-relaxed">
+                    Buka <em>Pengaturan HP &gt; Aplikasi &gt; Shalat & Quran &gt; Notifikasi</em>, pastikan kategori notifikasi diaktifkan dengan opsi <strong>"Tampilkan di Layar Kunci"</strong> dan <strong>"Izinkan Suara dan Getaran"</strong>.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-slate-900/60 border border-white/5 space-y-2">
+              <div className="flex items-start gap-2.5">
+                <span className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">3</span>
+                <div>
+                  <h4 className="text-xs font-bold text-white">Nyalakan "Adzan di Latar Belakang"</h4>
+                  <p className="text-xs text-slate-300 mt-0.5 leading-relaxed">
+                    Klik tombol hijau <strong>"Aktifkan Adzan di Latar Belakang"</strong> di atas. Sesi audio latar belakang akan menjaga proses perhitungan waktu shalat tetap berjalan secara presisi.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* SECTION 4: KALENDER HIJRIYAH */}
       <div className="p-6 rounded-3xl glass-panel-elevated border border-white/10 space-y-4 shadow-xl">
         <div className="flex items-center gap-2.5">
           <div className="p-2.5 rounded-2xl bg-teal-500/20 text-teal-400 border border-teal-500/30">
@@ -415,12 +647,12 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
         </div>
       </div>
 
-      {/* SECTION 4: PEMBARUAN APLIKASI (PWA UPDATE) */}
+      {/* SECTION 5: PEMBARUAN APLIKASI (PWA UPDATE) */}
       <div className="p-6 rounded-3xl glass-panel-elevated border border-white/10 space-y-4 shadow-xl">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-950 via-slate-900 to-emerald-900 border border-emerald-400/30 p-1.5 flex items-center justify-center shrink-0">
-              <img src="/favicon.svg" alt="Al-Qur'an Icon" className="w-full h-full object-contain filter drop-shadow" />
+              <img src="/apple-touch-icon.png" alt="Al-Qur'an Icon" className="w-full h-full object-contain filter drop-shadow" />
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -465,7 +697,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
         )}
       </div>
 
-      {/* SECTION 5: INFO SISTEM & STANDAR */}
+      {/* SECTION 6: INFO SISTEM & STANDAR */}
       <div className="p-5 rounded-3xl glass-panel border border-white/5 flex items-center gap-3 text-xs text-slate-400">
         <Info className="w-5 h-5 text-emerald-400 shrink-0" />
         <span>

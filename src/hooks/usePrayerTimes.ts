@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { calculatePrayerTimes, type CalculatedPrayerData } from '../services/prayerService';
 import { notificationService } from '../services/notificationService';
 import { audioService } from '../services/audioService';
+import { wakeLockService } from '../services/wakeLockService';
 import { DEFAULT_CITY } from '../data/indonesiaCities';
 import type { PrayerSettings, CityData, PrayerName, AdzanSoundPreference } from '../types/prayer';
 
@@ -27,6 +28,8 @@ const DEFAULT_SETTINGS: PrayerSettings = {
   volume: 0.85,
   fajrCustomAudio: true,
   hijriAdjustment: 0,
+  backgroundKeepAlive: false,
+  wakeLockEnabled: false,
 };
 
 export function usePrayerTimes() {
@@ -44,6 +47,7 @@ export function usePrayerTimes() {
   );
   const [isAdzanPlaying, setIsAdzanPlaying] = useState<boolean>(false);
   const [activeAdzanPrayer, setActiveAdzanPrayer] = useState<PrayerName | null>(null);
+  const [isKeepAliveActive, setIsKeepAliveActive] = useState<boolean>(false);
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>(() =>
     notificationService.getPermission()
   );
@@ -61,6 +65,7 @@ export function usePrayerTimes() {
     const unsub = audioService.subscribe((state) => {
       setIsAdzanPlaying(state.isPlaying);
       setActiveAdzanPrayer(state.prayer);
+      setIsKeepAliveActive(state.isKeepAlive);
     });
     return unsub;
   }, []);
@@ -95,7 +100,19 @@ export function usePrayerTimes() {
 
     update();
     const interval = setInterval(update, 1000);
-    return () => clearInterval(interval);
+
+    // Fast catch-up listener when device screen unlocks or tab visibility changes
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        update();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
   }, [settings, selectedDate]);
 
   // Set city manual
@@ -124,7 +141,6 @@ export function usePrayerTimes() {
 
           let detectedName = 'Lokasi Saya (GPS)';
           try {
-            // Reverse geocode via free bigdatacloud or openstreetmap reverse
             const res = await fetch(
               `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=id`
             );
@@ -179,6 +195,24 @@ export function usePrayerTimes() {
     setSettings((prev) => ({ ...prev, notificationsEnabled: enabled }));
   }, []);
 
+  // Toggle background keep-alive audio session
+  const toggleBackgroundKeepAlive = useCallback(async (enabled: boolean): Promise<boolean> => {
+    setSettings((prev) => ({ ...prev, backgroundKeepAlive: enabled }));
+    const ok = await audioService.setBackgroundKeepAlive(enabled);
+    return ok;
+  }, []);
+
+  // Toggle Screen Wake Lock
+  const toggleWakeLock = useCallback(async (enabled: boolean): Promise<boolean> => {
+    setSettings((prev) => ({ ...prev, wakeLockEnabled: enabled }));
+    if (enabled) {
+      return await wakeLockService.acquire();
+    } else {
+      wakeLockService.release();
+      return true;
+    }
+  }, []);
+
   // Set volume
   const setVolume = useCallback((v: number) => {
     setSettings((prev) => ({ ...prev, volume: v }));
@@ -212,6 +246,9 @@ export function usePrayerTimes() {
     notificationPermission,
     requestNotificationPermission,
     toggleNotifications,
+    toggleBackgroundKeepAlive,
+    toggleWakeLock,
+    isKeepAliveActive,
     setVolume,
     isAdzanPlaying,
     activeAdzanPrayer,

@@ -9,7 +9,8 @@ import {
   Sunset,
   Moon,
   Sparkles,
-  Square
+  Square,
+  Radio
 } from 'lucide-react';
 import type { CalculatedPrayerData } from '../../services/prayerService';
 import type { PrayerSettings, PrayerName } from '../../types/prayer';
@@ -22,6 +23,9 @@ interface PrayerTabProps {
   isAdzanPlaying: boolean;
   activeAdzanPrayer: PrayerName | null;
   onStopAdzan: () => void;
+  onToggleBackgroundKeepAlive?: (enabled: boolean) => Promise<boolean>;
+  isKeepAliveActive?: boolean;
+  onOpenSettings?: () => void;
 }
 
 export const PrayerTab: React.FC<PrayerTabProps> = ({
@@ -32,6 +36,9 @@ export const PrayerTab: React.FC<PrayerTabProps> = ({
   isAdzanPlaying,
   activeAdzanPrayer,
   onStopAdzan,
+  onToggleBackgroundKeepAlive,
+  isKeepAliveActive = false,
+  onOpenSettings,
 }) => {
   // Prayer icon mapping
   const getPrayerIcon = (id: PrayerName) => {
@@ -124,6 +131,57 @@ export const PrayerTab: React.FC<PrayerTabProps> = ({
           </div>
         </div>
       )}
+
+      {/* Background Adzan Helper Banner */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3.5 sm:p-4 rounded-3xl bg-gradient-to-r from-emerald-950/40 via-slate-900/70 to-teal-950/40 border border-emerald-500/20 gap-3">
+        <div className="flex items-center gap-3">
+          <div className={`p-2.5 rounded-2xl shrink-0 transition-colors ${isKeepAliveActive ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-slate-800 text-slate-400 border border-white/5'}`}>
+            <Radio className={`w-4 h-4 ${isKeepAliveActive ? 'animate-pulse' : ''}`} />
+          </div>
+          <div>
+            <div className="text-xs font-bold text-white flex items-center gap-2">
+              <span>Adzan di Layar Kunci (Background)</span>
+              {isKeepAliveActive ? (
+                <span className="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/30 font-bold">
+                  Aktif Berjalan
+                </span>
+              ) : (
+                <span className="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full font-medium border border-white/5">
+                  Nonaktif
+                </span>
+              )}
+            </div>
+            <p className="text-[11px] text-slate-400 mt-0.5">
+              {isKeepAliveActive
+                ? 'Sesi audio aktif. Layar HP dapat dikunci, adzan akan tetap bersuara otomatis.'
+                : 'Aktifkan agar sistem iOS / Android tidak mematikan adzan saat HP di-lock.'}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 w-full sm:w-auto justify-end shrink-0">
+          {onToggleBackgroundKeepAlive && (
+            <button
+              onClick={() => onToggleBackgroundKeepAlive(!settings.backgroundKeepAlive)}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                settings.backgroundKeepAlive
+                  ? 'bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30'
+                  : 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-md shadow-emerald-500/20'
+              }`}
+            >
+              {settings.backgroundKeepAlive ? 'Matikan' : 'Aktifkan Adzan Background'}
+            </button>
+          )}
+          {onOpenSettings && (
+            <button
+              onClick={onOpenSettings}
+              className="px-3 py-1.5 rounded-xl text-xs text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700/80 border border-white/10 transition-all cursor-pointer"
+            >
+              Panduan
+            </button>
+          )}
+        </div>
+      </div>
 
       {/* Top Date Navigation Bar */}
       <div className="flex items-center justify-between p-3 sm:p-4 rounded-3xl glass-panel border border-white/5">

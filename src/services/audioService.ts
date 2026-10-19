@@ -3,33 +3,54 @@ import type { PrayerName } from '../types/prayer';
 class AudioService {
   private adzanAudio: HTMLAudioElement | null = null;
   private chimeAudio: HTMLAudioElement | null = null;
+  private keepAliveAudio: HTMLAudioElement | null = null;
   private audioContext: AudioContext | null = null;
   private currentVolume: number = 0.85;
   private isPlayingAdzan: boolean = false;
   private currentAdzanPrayer: PrayerName | null = null;
-  private listeners: ((state: { isPlaying: boolean; prayer: PrayerName | null }) => void)[] = [];
+  private isKeepAliveActive: boolean = false;
+  private listeners: ((state: { isPlaying: boolean; prayer: PrayerName | null; isKeepAlive: boolean }) => void)[] = [];
 
   constructor() {
-    // Lazy initialized on user interaction or first call
+    // Listen for messages from Service Worker (e.g. STOP_ADZAN action from notification)
+    if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('message', (event) => {
+        if (event.data?.type === 'STOP_ADZAN') {
+          this.stopAdzan();
+        }
+      });
+    }
   }
 
-  public subscribe(listener: (state: { isPlaying: boolean; prayer: PrayerName | null }) => void) {
+  public subscribe(listener: (state: { isPlaying: boolean; prayer: PrayerName | null; isKeepAlive: boolean }) => void) {
     this.listeners.push(listener);
-    // notify initial
-    listener({ isPlaying: this.isPlayingAdzan, prayer: this.currentAdzanPrayer });
+    listener({
+      isPlaying: this.isPlayingAdzan,
+      prayer: this.currentAdzanPrayer,
+      isKeepAlive: this.isKeepAliveActive,
+    });
     return () => {
       this.listeners = this.listeners.filter((l) => l !== listener);
     };
   }
 
   private notify() {
-    this.listeners.forEach((l) => l({ isPlaying: this.isPlayingAdzan, prayer: this.currentAdzanPrayer }));
+    this.listeners.forEach((l) =>
+      l({
+        isPlaying: this.isPlayingAdzan,
+        prayer: this.currentAdzanPrayer,
+        isKeepAlive: this.isKeepAliveActive,
+      })
+    );
   }
 
   public setVolume(volume: number) {
     this.currentVolume = Math.max(0, Math.min(1, volume));
     if (this.adzanAudio) this.adzanAudio.volume = this.currentVolume;
     if (this.chimeAudio) this.chimeAudio.volume = this.currentVolume;
+    if (this.keepAliveAudio && this.isPlayingAdzan) {
+      this.keepAliveAudio.volume = this.currentVolume;
+    }
   }
 
   public getVolume(): number {
@@ -44,15 +65,116 @@ class AudioService {
     return this.currentAdzanPrayer;
   }
 
+  public getIsKeepAliveActive(): boolean {
+    return this.isKeepAliveActive;
+  }
+
   /**
-   * Plays the Adzan audio (Subuh or Reguler)
+   * Initializes or toggles background audio keep-alive session.
+   * Plays a silent audio loop to prevent mobile OS (iOS/Android) from sleeping JS timers & blocking audio.
+   */
+  public async setBackgroundKeepAlive(enabled: boolean): Promise<boolean> {
+    if (!enabled) {
+      this.stopBackgroundKeepAlive();
+      return false;
+    }
+
+    try {
+      if (!this.keepAliveAudio) {
+        this.keepAliveAudio = new Audio('/audio/silence.wav');
+      }
+      this.keepAliveAudio.loop = true;
+      this.keepAliveAudio.volume = 0.01; // Minimum volume to prevent WebKit sleep optimization
+
+      this.updateMediaSessionMetadata('Pengingat Shalat Aktif', 'Berjalan di latar belakang (Kemenag RI)');
+      await this.keepAliveAudio.play();
+      this.isKeepAliveActive = true;
+      this.notify();
+      return true;
+    } catch (err) {
+      console.warn('Background KeepAlive audio could not start without user interaction:', err);
+      this.isKeepAliveActive = false;
+      this.notify();
+      return false;
+    }
+  }
+
+  public stopBackgroundKeepAlive() {
+    if (this.keepAliveAudio) {
+      this.keepAliveAudio.pause();
+      this.keepAliveAudio.src = '';
+      this.keepAliveAudio = null;
+    }
+    this.isKeepAliveActive = false;
+    this.notify();
+  }
+
+  private updateMediaSessionMetadata(title: string, artist: string) {
+    if (typeof navigator !== 'undefined' && 'mediaSession' in navigator) {
+      try {
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title,
+          artist,
+          album: 'Jadwal Shalat & Al-Quran PWA',
+          artwork: [
+            { src: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+            { src: '/pwa-192x192.png', sizes: '192x192', type: 'image/png' },
+            { src: '/pwa-512x512.png', sizes: '512x512', type: 'image/png' },
+          ],
+        });
+
+        navigator.mediaSession.setActionHandler('play', () => {
+          if (this.keepAliveAudio) this.keepAliveAudio.play().catch(() => {});
+        });
+        navigator.mediaSession.setActionHandler('stop', () => {
+          this.stopAdzan();
+        });
+      } catch (e) {
+        console.warn('MediaSession error:', e);
+      }
+    }
+  }
+
+  /**
+   * Plays the Adzan audio (Subuh or Reguler).
+   * If background keep-alive audio is active, re-uses that unlocked audio element to bypass mobile background autoplay restrictions.
    */
   public async playAdzan(prayer: PrayerName): Promise<boolean> {
     try {
-      this.stopAdzan();
-
       const audioSrc = prayer === 'fajr' ? '/audio/adzan-subuh.mp3' : '/audio/adzan-reguler.mp3';
+      const prayerNameCapital = prayer.charAt(0).toUpperCase() + prayer.slice(1);
 
+      // Path A: If background keep-alive audio is already playing, reuse its unlocked pipeline
+      if (this.keepAliveAudio) {
+        this.keepAliveAudio.pause();
+        this.keepAliveAudio.src = audioSrc;
+        this.keepAliveAudio.volume = this.currentVolume;
+        this.keepAliveAudio.loop = false;
+
+        this.keepAliveAudio.onended = () => {
+          this.isPlayingAdzan = false;
+          this.currentAdzanPrayer = null;
+          // Restore silent loop in background
+          if (this.keepAliveAudio) {
+            this.keepAliveAudio.src = '/audio/silence.wav';
+            this.keepAliveAudio.volume = 0.01;
+            this.keepAliveAudio.loop = true;
+            this.keepAliveAudio.play().catch(() => {});
+            this.updateMediaSessionMetadata('Pengingat Shalat Aktif', 'Berjalan di latar belakang (Kemenag RI)');
+          }
+          this.notify();
+        };
+
+        this.updateMediaSessionMetadata(`Adzan ${prayerNameCapital} Berkumandang`, 'Mari tunaikan shalat tepat waktu');
+        await this.keepAliveAudio.play();
+        this.isPlayingAdzan = true;
+        this.currentAdzanPrayer = prayer;
+        this.notify();
+        return true;
+      }
+
+      // Path B: Foreground standalone audio
+      this.stopAdzan();
       this.adzanAudio = new Audio(audioSrc);
       this.adzanAudio.volume = this.currentVolume;
 
@@ -70,6 +192,7 @@ class AudioService {
         this.notify();
       };
 
+      this.updateMediaSessionMetadata(`Adzan ${prayerNameCapital} Berkumandang`, 'Mari tunaikan shalat tepat waktu');
       await this.adzanAudio.play();
       this.isPlayingAdzan = true;
       this.currentAdzanPrayer = prayer;
@@ -77,7 +200,6 @@ class AudioService {
       return true;
     } catch (err) {
       console.warn('Browser autoplay prevented audio or audio failed:', err);
-      // Fallback
       this.playWebAudioChime();
       return false;
     }
@@ -87,11 +209,21 @@ class AudioService {
    * Stops currently playing adzan
    */
   public stopAdzan() {
+    if (this.keepAliveAudio && this.isPlayingAdzan) {
+      this.keepAliveAudio.pause();
+      this.keepAliveAudio.src = '/audio/silence.wav';
+      this.keepAliveAudio.volume = 0.01;
+      this.keepAliveAudio.loop = true;
+      this.keepAliveAudio.play().catch(() => {});
+      this.updateMediaSessionMetadata('Pengingat Shalat Aktif', 'Berjalan di latar belakang (Kemenag RI)');
+    }
+
     if (this.adzanAudio) {
       this.adzanAudio.pause();
       this.adzanAudio.currentTime = 0;
       this.adzanAudio = null;
     }
+
     this.isPlayingAdzan = false;
     this.currentAdzanPrayer = null;
     this.notify();

@@ -25,6 +25,8 @@ export interface PrayerSettings {
   volume: number; // 0.0 - 1.0
   fajrCustomAudio: boolean;
   hijriAdjustment: number; // -2 to +2
+  backgroundKeepAlive: boolean; // Keep background audio session alive for background adzan
+  wakeLockEnabled: boolean; // Keep screen active on desk/stand
 }
 
 export interface CityData {
